@@ -3,7 +3,14 @@ Map Reduce Wordcount Quickstart
 
 This quickstart demonstrates a *map reduce* job running on *four nodes* in *Java SE*.
 
-Map reduce is used to count the number of word in the complete works of Shakespeare. This is not a strictly accurate count because the strings are tokenized rather than being checked if they are true words before being counted. Also the licensing agreement is target text.
+In theis example Map Reduce is used to count the number of words in the complete works of Shakespeare. This is not a strictly accurate count because the lines are tokenized into strings. Consequently, the following are counted as different words - 
+  methinks;
+  methinks,
+  methinks.
+  methinks
+  Methinks
+
+Also the licensing agreement is in the target text.
 
 The example can be deployed using Maven from the command line or from Eclipse using
 JBoss Tools.
