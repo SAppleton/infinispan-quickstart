@@ -48,10 +48,6 @@ import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Collector;
 
-//import java.nio.charset.StandardCharsets;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
-
 public class Node2 extends AbstractNode {
 	
    static OutputStream fos = null;
@@ -94,14 +90,11 @@ public class Node2 extends AbstractNode {
 
    
    /**
-    * In this example replace c1 and c2 with
-    * real Cache references
+    * Reads in the completed works of Shakspeare and put each line in the cache
     *
-    * @param args
+    * @param c - the cache
     */
    private void populate2(Cache c) {
-
-      System.out.println("************ Populate2");
            
       InputStream    fis;
       BufferedReader br = null;
@@ -112,7 +105,6 @@ public class Node2 extends AbstractNode {
          fis = new FileInputStream("shaks12.txt");
          br = new BufferedReader(new InputStreamReader(fis));
          while ((line = br.readLine()) != null) {
-            //System.out.println("'"+line+"'");
             c.putAsync(""+i, line);
             i++;
          }
@@ -133,19 +125,17 @@ public class Node2 extends AbstractNode {
 	    	         .reducedWith(new WordCountReducer());
 	    	      Map<String, Integer> wordCountMap = t.execute();
    }
+
    
    private static void writeToFile(String b) {
 
-	      System.out.println("************ writeToFile");
-	      
 	      try{
 	         fos.write(b.getBytes());
 	      }
 	      catch(Exception e){
 	    	  System.out.println(e.getMessage());
 	      }
-	      
-	   }
+   }
    
 
  
@@ -175,7 +165,7 @@ public class Node2 extends AbstractNode {
 	            sum += i;
 	         }
 	         System.out.println(key + " count: "+ sum);
-                 writeToFile(key + " count: "+ sum + "\n"); // TODO change to generic system EOL char
+                 writeToFile(key + " count: "+ sum + System.getProperty("line.separator"));
 	         return sum;
 	      }
 	   }   

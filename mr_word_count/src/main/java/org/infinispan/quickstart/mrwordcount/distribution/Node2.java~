@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other
  * contributors as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a full listing of
  * individual contributors.
@@ -20,10 +20,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.infinispan.quickstart.clusteredcache.distribution;
+package org.infinispan.quickstart.mrwordcount.distribution;
 
 import org.infinispan.Cache;
-import org.infinispan.quickstart.clusteredcache.util.LoggingListener;
+import org.infinispan.quickstart.mrwordcount.util.LoggingListener;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -47,10 +47,6 @@ import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Collector;
-
-//import java.nio.charset.StandardCharsets;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
 
 public class Node2 extends AbstractNode {
 	
@@ -94,14 +90,11 @@ public class Node2 extends AbstractNode {
 
    
    /**
-    * In this example replace c1 and c2 with
-    * real Cache references
+    * Reads in the completed works of Shakspeare and put each line in the cache
     *
-    * @param args
+    * @param c - the cache
     */
    private void populate2(Cache c) {
-
-      System.out.println("************ Populate2");
            
       InputStream    fis;
       BufferedReader br = null;
@@ -112,7 +105,6 @@ public class Node2 extends AbstractNode {
          fis = new FileInputStream("shaks12.txt");
          br = new BufferedReader(new InputStreamReader(fis));
          while ((line = br.readLine()) != null) {
-            //System.out.println("'"+line+"'");
             c.putAsync(""+i, line);
             i++;
          }
@@ -133,19 +125,17 @@ public class Node2 extends AbstractNode {
 	    	         .reducedWith(new WordCountReducer());
 	    	      Map<String, Integer> wordCountMap = t.execute();
    }
+
    
    private static void writeToFile(String b) {
 
-	      System.out.println("************ writeToFile");
-	      
 	      try{
 	         fos.write(b.getBytes());
 	      }
 	      catch(Exception e){
 	    	  System.out.println(e.getMessage());
 	      }
-	      
-	   }
+   }
    
 
  
