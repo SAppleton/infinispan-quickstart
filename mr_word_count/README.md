@@ -19,10 +19,15 @@ For more information, including how to set up Maven or JBoss Tools in Eclipse,
 refer to the [Getting Started Guide](https://docs.jboss.org/author/display/ISPN/Getting+Started+Guide+-+Clustered+Cache+in+Java+SE).
 
 To compile, type `mvn clean compile dependency:copy-dependencies -DstripVersion`, 
-and then, to run, `java -cp target/classes:target/dependency/* Node0` in one terminal, `java -cp target/classes:target/dependency/* Node1` in another, `java -cp target/classes:target/dependency/* Node2` in another and `java -cp target/classes:target/dependency/* Node3` in another.
-Alternatively run `./runNodes.sh`
+and then, to run, `java -Djgroups.bind_addr=127.0.0.1 -Djava.net.preferIPv4Stack=true -cp target/classes/:target/dependency/* org.infinispan.quickstart.mrwordcount.distribution.Node0` in one terminal,
+`java -Djgroups.bind_addr=127.0.0.1 -Djava.net.preferIPv4Stack=true -cp target/classes/:target/dependency/* org.infinispan.quickstart.mrwordcount.distribution.Node1` in another, 
+`java -Djgroups.bind_addr=127.0.0.1 -Djava.net.preferIPv4Stack=true -cp target/classes/:target/dependency/* org.infinispan.quickstart.mrwordcount.distribution.Node2` in another and 
+`java -Djgroups.bind_addr=127.0.0.1 -Djava.net.preferIPv4Stack=true -cp target/classes/:target/dependency/* org.infinispan.quickstart.mrwordcount.distribution.Node3` in another.
 
-TODO CREATE! => If using Windows you will need to use `runNodes.bat`
+If using Windows you will need to replace ':' with ';' on the command line.
+
+Alternatively run `./runNodes.sh` or `runNodes.bat`
+
 
 The cluster will form and start to read in the complete works. This will take a few minutes and create about 120000 keys in the distributed in-memory cache. 
 
