@@ -35,9 +35,13 @@ Once the text is read the count will start and produce output to the screen with
 
 
 word1 count: number1
+
 word2 count: number2
+
 word3 count: number3
+
 word4 count: number4
+
 .
 .
 .
