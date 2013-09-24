@@ -36,7 +36,6 @@ public class Node3 extends AbstractNode {
       
       // Add a listener so that we can see the puts to this node
       cache.addListener(new LoggingListener());
-
       waitForClusterToForm();
    }
    

@@ -65,7 +65,7 @@ public class Node2 extends AbstractNode {
       // Add a listener so that we can see the puts to this node
       cache.addListener(new LoggingListener());
 
-      populate2(cache);
+      populate(cache);
       
       try{
 	         fos = new FileOutputStream("results.txt");
@@ -90,11 +90,11 @@ public class Node2 extends AbstractNode {
 
    
    /**
-    * Reads in the completed works of Shakspeare and put each line in the cache
+    * Reads in the complete works of Shakespeare and puts each line in the cache
     *
     * @param c - the cache
     */
-   private void populate2(Cache c) {
+   private void populate(Cache c) {
            
       InputStream    fis;
       BufferedReader br = null;
