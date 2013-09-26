@@ -13,3 +13,4 @@ contains tutorials for:
 * `clustered-cache` - simple example using an embedded cache with two nodes from Java SE
 * `cdi` - simple example demonstrating the Infinispan CDI Support
 * `jboss-as7` - simple example demonstrating the cretion of a simple, clustered, cache on JBoss AS 7
+* `mr_word_count` - simple example demonstrating how to use Map Reduce to count words in some text from Java SE
