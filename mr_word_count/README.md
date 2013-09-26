@@ -33,16 +33,11 @@ The cluster will form and start to read in the complete works. This will take a 
 
 Once the text is read the count will start and produce output to the screen with the following the pattern:
 
-
-word1 count: number1
-
-word2 count: number2
-
-word3 count: number3
-
-word4 count: number4
-
-.
-.
-.
+    word1 count: number1
+    word2 count: number2
+    word3 count: number3
+    word4 count: number4
+    .
+    .
+    .
 
