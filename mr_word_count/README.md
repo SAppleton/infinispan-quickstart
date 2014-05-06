@@ -1,5 +1,9 @@
+**DO NOT USE - This is currently broken**
+==========================
+
 Map Reduce Wordcount Quickstart
 ==========================
+
 
 This quickstart demonstrates a *map reduce* job running on *four nodes* in *Java SE*.
 
