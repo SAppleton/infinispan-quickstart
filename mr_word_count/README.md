@@ -1,6 +1,3 @@
-**DO NOT USE - This is currently broken**
-==========================
-
 Map Reduce Wordcount Quickstart
 ==========================
 
