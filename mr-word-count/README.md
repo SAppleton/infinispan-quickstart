@@ -5,7 +5,8 @@ This quickstart demonstrates *map reduce* running on *three nodes* in
 *Java SE*. One of the three nodes is the controller node which populates the cache
 and starts the word count job.
 
-In this example Map Reduce is used to count the number of words in the complete works of Shakespeare. This is not a strictly accurate count because the lines are tokenized into strings. Consequently, the following are counted as different words - 
+In this example Map Reduce is used to count the number of words in the complete works of Shakespeare. This is not a strictly accurate count because the lines are tokenized into strings. Consequently, the following are counted as different words -
+
   methinks;
   methinks,
   methinks.
@@ -23,11 +24,11 @@ refer to the [Getting Started Guide](https://docs.jboss.org/author/display/ISPN/
 * Compile the application by running `mvn clean compile dependency:copy-dependencies -DstripVersion`
 
 * To try first run two *distributed* cache nodes, by running the following commands in separated terminals:
-    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.clusteredcache.Node B`
-    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.clusteredcache.Node C`
+    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.mrwordcount.Node B`
+    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.mrwordcount.Node C`
 
 * Next run the controller node by typing the following command in another separated terminals
-    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.clusteredcache.Node -c A`
+    * `java -cp "target/classes:target/dependency/*" org.infinispan.quickstart.mrwordcount.Node -c A`
 
 
 It will take a few minutes and create about 120000 keys in the distributed in-memory cache. 
