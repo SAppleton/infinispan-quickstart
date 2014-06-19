@@ -64,225 +64,225 @@ import java.util.TreeSet;
 
 public class Node {
 
-   private static final BasicLogger log = Logger.getLogger(Node.class);
+	private static final BasicLogger log = Logger.getLogger(Node.class);
 
-   private final boolean useXmlConfig;
-   private volatile boolean isController = false;
-   private final String nodeName;
-   private volatile boolean stop = false;
-   static OutputStream fos = null;
+	private final boolean useXmlConfig;
+	private volatile boolean isController = false;
+	private final String nodeName;
+	private volatile boolean stop = false;
+	static OutputStream fos = null;
 
-   public Node(boolean useXmlConfig, boolean isControl, String nodeName) {
-      this.useXmlConfig = useXmlConfig;
-      this.isController = isControl;
-      this.nodeName = nodeName;
-   }
+	public Node(boolean useXmlConfig, boolean isControl, String nodeName) {
+		this.useXmlConfig = useXmlConfig;
+		this.isController = isControl;
+		this.nodeName = nodeName;
+	}
 
-   public static void main(String[] args) throws Exception {
-      boolean useXmlConfig = false;
-      boolean isControl = false;
-      String nodeName = null;
+	public static void main(String[] args) throws Exception {
+		boolean useXmlConfig = false;
+		boolean isControl = false;
+		String nodeName = null;
 
-      for (String arg : args) {
-         if ("-x".equals(arg)) {
-            useXmlConfig = true;
-         } else if ("-p".equals(arg)) {
-            useXmlConfig = false;
-         } else if ("-c".equals(arg)) {
-            isControl = true;  //Special case a controller node to populate the cache
-         } else {
-            nodeName = arg;
-         }
-      }
-      new Node(useXmlConfig, isControl, nodeName).run();
-   }
-   
+		for (String arg : args) {
+			if ("-x".equals(arg)) {
+				useXmlConfig = true;
+			} else if ("-p".equals(arg)) {
+				useXmlConfig = false;
+			} else if ("-c".equals(arg)) {
+				isControl = true;  //Special case a controller node to populate the cache
+			} else {
+				nodeName = arg;
+			}
+		}
+		new Node(useXmlConfig, isControl, nodeName).run();
+	}
 
-   public void run() throws IOException, InterruptedException {
-      EmbeddedCacheManager cacheManager = createCacheManager();
-      final Cache<String, String> cache = cacheManager.getCache("dist");
-      System.out.printf("Cache %s started on %s, cache members are now %s\n", "dist", cacheManager.getAddress(),
-            cache.getAdvancedCache().getRpcManager().getMembers());  
 
-      // Add a listener so that we can see the puts to this node
-      cache.addListener(new LoggingListener());
+	public void run() throws IOException, InterruptedException {
+		EmbeddedCacheManager cacheManager = createCacheManager();
+		final Cache<String, String> cache = cacheManager.getCache("dist");
+		System.out.printf("Cache %s started on %s, cache members are now %s\n", "dist", cacheManager.getAddress(),
+				cache.getAdvancedCache().getRpcManager().getMembers());  
 
-      printCacheContents(cache);
+		// Add a listener so that we can see the puts to this node
+		cache.addListener(new LoggingListener());
 
-// if the node is a controller node then that does all the co-ordination
-      if (isController){
-         Thread putThread = new Thread() {
-            @Override
-            public void run() {
+		printCacheContents(cache);
 
-               populate(cache);
-      
-               try{
-	         fos = new FileOutputStream("results.txt");
-	       }
-	       catch(Exception e){
-	    	  System.out.println(e.getMessage());
-               }
-      
-               countWords(cache);
-      
-               try{
-                  fos.close();
-               }
-	       catch(Exception e){
-    	          System.out.println(e.getMessage());
-               } 
-           }
-         };
-      putThread.start();
+		// if the node is a controller node then that does all the co-ordination
+		if (isController){
+			Thread putThread = new Thread() {
+				@Override
+				public void run() {
 
-      System.out.println("Press Enter to print the cache contents, Ctrl+D/Ctrl+Z to stop.");
-      while (System.in.read() > 0) {
-         printCacheContents(cache);
-      }
+					populate(cache);
 
-      stop = true;
-      putThread.join();
-      cacheManager.stop();
-      System.exit(0);
-}
-   }
+					try{
+						fos = new FileOutputStream("results.txt");
+					}
+					catch(Exception e){
+						System.out.println(e.getMessage());
+					}
 
-   /**
-    * {@link org.infinispan.Cache#entrySet()}
-    * @param cache
-    */
-   private void printCacheContents(Cache<String, String> cache) {
-      System.out.printf("Cache contents on node %s\n", cache.getAdvancedCache().getRpcManager().getAddress());
+					countWords(cache);
 
-      ArrayList<Map.Entry<String, String>> entries = new ArrayList<Map.Entry<String, String>>(cache.entrySet());
-      Collections.sort(entries, new Comparator<Map.Entry<String, String>>() {
-         @Override
-         public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
-            return o1.getKey().compareTo(o2.getKey());
-         }
-      });
-      for (Map.Entry<String, String> e : entries) {
-         System.out.printf("\t%s = %s\n", e.getKey(), e.getValue());
-      }
-      System.out.println();
-   }
+					try{
+						fos.close();
+					}
+					catch(Exception e){
+						System.out.println(e.getMessage());
+					} 
+				}
+			};
+			putThread.start();
 
-   private EmbeddedCacheManager createCacheManager() throws IOException {
-      if (useXmlConfig) {
-         return createCacheManagerFromXml();
-      } else {
-         return createCacheManagerProgrammatically();
-      }
-   }
+			System.out.println("Press Enter to print the cache contents, Ctrl+D/Ctrl+Z to stop.");
+			while (System.in.read() > 0) {
+				printCacheContents(cache);
+			}
 
-   private EmbeddedCacheManager createCacheManagerProgrammatically() {
-      System.out.println("Starting a cache manager with a programmatic configuration");
-      DefaultCacheManager cacheManager = new DefaultCacheManager(
-            GlobalConfigurationBuilder.defaultClusteredBuilder()
-                  .transport().nodeName(nodeName).addProperty("configurationFile", "jgroups.xml")
-                  .build(),
-            new ConfigurationBuilder()
-                  .clustering()
-                  .cacheMode(CacheMode.REPL_SYNC)
-                  .build()
-      );
-      // only dist caches allowed
-      cacheManager.defineConfiguration("dist", new ConfigurationBuilder()
-            .clustering()
-            .cacheMode(CacheMode.DIST_SYNC)
-            .hash().numOwners(2)
-            .build()
-      );
-      return cacheManager;
-   }
+			stop = true;
+			putThread.join();
+			cacheManager.stop();
+			System.exit(0);
+		}
+	}
 
-   private EmbeddedCacheManager createCacheManagerFromXml() throws IOException {
-      System.out.println("Starting a cache manager with an XML configuration");
-      System.setProperty("nodeName", nodeName);
-      return new DefaultCacheManager("infinispan.xml");
-   }
+	/**
+	 * {@link org.infinispan.Cache#entrySet()}
+	 * @param cache
+	 */
+	private void printCacheContents(Cache<String, String> cache) {
+		System.out.printf("Cache contents on node %s\n", cache.getAdvancedCache().getRpcManager().getAddress());
 
-   
-   /**
-    * Reads in the complete works of Shakespeare and puts each line in the cache
-    *
-    * @param c - the cache
-    */
-   private void populate(Cache c) {
-           
-      InputStream    fis;
-      BufferedReader br = null;
-      String         line;      
-      int i = 1;
-      
-      try{
-         fis = new FileInputStream("shaks12.txt");
-         br = new BufferedReader(new InputStreamReader(fis));
-         while ((line = br.readLine()) != null) {
-            c.putAsync(""+i, line);
-            i++;
-         }
-         br.close();
-         br = null;
-         fis = null;
-      }
-      catch(Exception e){
-    	  System.out.println(e.getMessage());
-      }
-   }
-   
-   private void countWords(Cache c)
-   {
-	      MapReduceTask<String, String, String, Integer> t =
-	    	         new MapReduceTask<String, String, String, Integer>(c);
-	    	      t.mappedWith(new WordCountMapper())
-	    	         .reducedWith(new WordCountReducer());
-	    	      Map<String, Integer> wordCountMap = t.execute();
-   }
+		ArrayList<Map.Entry<String, String>> entries = new ArrayList<Map.Entry<String, String>>(cache.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<String, String>>() {
+			@Override
+			public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+				return o1.getKey().compareTo(o2.getKey());
+			}
+		});
+		for (Map.Entry<String, String> e : entries) {
+			System.out.printf("\t%s = %s\n", e.getKey(), e.getValue());
+		}
+		System.out.println();
+	}
 
-   
-   private static void writeToFile(String b) {
+	private EmbeddedCacheManager createCacheManager() throws IOException {
+		if (useXmlConfig) {
+			return createCacheManagerFromXml();
+		} else {
+			return createCacheManagerProgrammatically();
+		}
+	}
 
-	      try{
-	         fos.write(b.getBytes());
-	      }
-	      catch(Exception e){
-	    	  System.out.println(e.getMessage());
-	      }
-   }
-   
+	private EmbeddedCacheManager createCacheManagerProgrammatically() {
+		System.out.println("Starting a cache manager with a programmatic configuration");
+		DefaultCacheManager cacheManager = new DefaultCacheManager(
+				GlobalConfigurationBuilder.defaultClusteredBuilder()
+				.transport().nodeName(nodeName).addProperty("configurationFile", "jgroups.xml")
+				.build(),
+				new ConfigurationBuilder()
+				.clustering()
+				.cacheMode(CacheMode.REPL_SYNC)
+				.build()
+				);
+		// only dist caches allowed
+		cacheManager.defineConfiguration("dist", new ConfigurationBuilder()
+		.clustering()
+		.cacheMode(CacheMode.DIST_SYNC)
+		.hash().numOwners(2)
+		.build()
+				);
+		return cacheManager;
+	}
 
- 
-   static class WordCountMapper implements Mapper<String,String,String,Integer> {
-      /** The serialVersionUID */
-      private static final long serialVersionUID = -5943370243108735560L;
- 
-      @Override
-      public void map(String key, String value, Collector<String, Integer> c) {
-         StringTokenizer tokens = new StringTokenizer(value);
-         while (tokens.hasMoreElements()) {
-            String s = (String) tokens.nextElement();
-            c.emit(s, 1);
-         }
-      }
-   }
-   
-   static class WordCountReducer implements Reducer<String, Integer> {
-	      /** The serialVersionUID */
-	      private static final long serialVersionUID = 1901016598354633256L;
-	 
-	      @Override
-	      public Integer reduce(String key, Iterator<Integer> iter) {
-	         int sum = 0;
-	         while (iter.hasNext()) {
-	            Integer i = (Integer) iter.next();
-	            sum += i;
-	         }
-	         System.out.println(key + " count: "+ sum);
-                 writeToFile(key + " count: "+ sum + System.getProperty("line.separator"));
-	         return sum;
-	      }
-	   }   
-   
+	private EmbeddedCacheManager createCacheManagerFromXml() throws IOException {
+		System.out.println("Starting a cache manager with an XML configuration");
+		System.setProperty("nodeName", nodeName);
+		return new DefaultCacheManager("infinispan.xml");
+	}
+
+
+	/**
+	 * Reads in the complete works of Shakespeare and puts each line in the cache
+	 *
+	 * @param c - the cache
+	 */
+	private void populate(Cache c) {
+
+		InputStream    fis;
+		BufferedReader br = null;
+		String         line;      
+		int i = 1;
+
+		try{
+			fis = new FileInputStream("shaks12.txt");
+			br = new BufferedReader(new InputStreamReader(fis));
+			while ((line = br.readLine()) != null) {
+				c.putAsync(""+i, line);
+				i++;
+			}
+			br.close();
+			br = null;
+			fis = null;
+		}
+		catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+	}
+
+	private void countWords(Cache c)
+	{
+		MapReduceTask<String, String, String, Integer> t =
+				new MapReduceTask<String, String, String, Integer>(c);
+		t.mappedWith(new WordCountMapper())
+		.reducedWith(new WordCountReducer());
+		Map<String, Integer> wordCountMap = t.execute();
+	}
+
+
+	private static void writeToFile(String b) {
+
+		try{
+			fos.write(b.getBytes());
+		}
+		catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+	}
+
+
+
+	static class WordCountMapper implements Mapper<String,String,String,Integer> {
+		/** The serialVersionUID */
+		private static final long serialVersionUID = -5943370243108735560L;
+
+		@Override
+		public void map(String key, String value, Collector<String, Integer> c) {
+			StringTokenizer tokens = new StringTokenizer(value);
+			while (tokens.hasMoreElements()) {
+				String s = (String) tokens.nextElement();
+				c.emit(s, 1);
+			}
+		}
+	}
+
+	static class WordCountReducer implements Reducer<String, Integer> {
+		/** The serialVersionUID */
+		private static final long serialVersionUID = 1901016598354633256L;
+
+		@Override
+		public Integer reduce(String key, Iterator<Integer> iter) {
+			int sum = 0;
+			while (iter.hasNext()) {
+				Integer i = (Integer) iter.next();
+				sum += i;
+			}
+			System.out.println(key + " count: "+ sum);
+			writeToFile(key + " count: "+ sum + System.getProperty("line.separator"));
+			return sum;
+		}
+	}   
+
 }
